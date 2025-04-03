@@ -1,0 +1,286 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pumpkin Leaf Disease Detector</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #2E7D32;
+            --accent-color: #8BC34A;
+            --dark-bg: rgba(0, 0, 0, 0.7);
+            --light-text: #fff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-image: url('{{ url_for("static", filename="images/Background.jpg") }}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background-color: var(--dark-bg);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+            color: var(--light-text);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #ddd;
+        }
+
+        .upload-area {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px dashed var(--accent-color);
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .upload-area i {
+            font-size: 50px;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+        }
+
+        .upload-area h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .upload-area p {
+            color: #ccc;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .file-info {
+            margin: 20px 0;
+            display: none;
+        }
+
+        .file-info p {
+            font-size: 1.1rem;
+        }
+
+        .file-name {
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            display: block;
+            width: 60%;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .submit-btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .info-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .info-section h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+        }
+
+        .info-section ul {
+            list-style-type: none;
+        }
+
+        .info-section li {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .info-section li i {
+            color: var(--accent-color);
+            margin-right: 10px;
+            margin-top: 4px;
+        }
+
+        .error-message {
+            background-color: rgba(255, 0, 0, 0.2);
+            border-left: 4px solid #ff0000;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            color: #ffcccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Pumpkin Leaf Disease Detector</h1>
+            <p>Upload a leaf image to identify diseases and get treatment recommendations</p>
+        </div>
+
+        {% if error %}
+        <div class="error-message">
+            <i class="fas fa-exclamation-circle"></i> {{ error }}
+        </div>
+        {% endif %}
+
+        <form action="/upload" method="post" enctype="multipart/form-data" id="upload-form">
+            <div class="upload-area" onclick="document.getElementById('file-input').click()">
+                <i class="fas fa-leaf"></i>
+                <h3>Upload Leaf Image</h3>
+                <p>Click to browse or drag an image here</p>
+            </div>
+
+            <input type="file" name="file" id="file-input" accept="image/*" onchange="showFileName(this)">
+
+            <div class="file-info" id="file-info">
+                <p>Selected file: <span class="file-name" id="file-name"></span></p>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-search"></i> Analyze Leaf
+            </button>
+        </form>
+
+        <div class="info-section">
+            <h3>How It Works</h3>
+            <ul>
+                <li><i class="fas fa-camera"></i> Take a clear photo of the pumpkin leaf</li>
+                <li><i class="fas fa-upload"></i> Upload the image using the form above</li>
+                <li><i class="fas fa-robot"></i> Our AI analyzes the leaf for disease patterns</li>
+                <li><i class="fas fa-clipboard-list"></i> Receive diagnosis and treatment recommendations</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function showFileName(input) {
+            const fileInfo = document.getElementById('file-info');
+            const fileName = document.getElementById('file-name');
+
+            if (input.files && input.files[0]) {
+                fileName.textContent = input.files[0].name;
+                fileInfo.style.display = 'block';
+
+                // Preview image if needed
+                // const reader = new FileReader();
+                // reader.onload = function(e) {
+                //     document.getElementById('preview').src = e.target.result;
+                // }
+                // reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Optional: Add drag and drop functionality
+        const uploadArea = document.querySelector('.upload-area');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            uploadArea.classList.add('highlight');
+        }
+
+        function unhighlight() {
+            uploadArea.classList.remove('highlight');
+        }
+
+        uploadArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            document.getElementById('file-input').files = files;
+            showFileName(document.getElementById('file-input'));
+        }
+    </script>
+</body>
+</html>

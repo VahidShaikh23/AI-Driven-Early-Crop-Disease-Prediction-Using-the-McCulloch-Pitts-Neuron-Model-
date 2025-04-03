@@ -1,0 +1,478 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pumpkin Leaf Disease Detector</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #2E7D32;
+            --accent-color: #8BC34A;
+            --dark-bg: rgba(0, 0, 0, 0.7);
+            --light-text: #fff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-image: url('{{ url_for("static", filename="images/Background.jpg") }}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: -1;
+        }
+
+        .navbar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: var(--dark-bg);
+            border-radius: 10px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--light-text);
+        }
+
+        .logo i {
+            font-size: 24px;
+            color: var(--accent-color);
+            margin-right: 10px;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: var(--light-text);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background-color: var(--accent-color);
+        }
+
+        .hero {
+            width: 90%;
+            max-width: 1200px;
+            padding: 50px 30px;
+            background-color: var(--dark-bg);
+            border-radius: 15px;
+            margin-bottom: 40px;
+            text-align: center;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+            color: var(--light-text);
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: #ddd;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .features {
+            width: 90%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .feature-card {
+            background-color: var(--dark-bg);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            color: var(--light-text);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .feature-card i {
+            font-size: 48px;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+        }
+
+        .feature-card p {
+            color: #ddd;
+            line-height: 1.6;
+        }
+
+        .diseases-section {
+            width: 90%;
+            max-width: 1200px;
+            padding: 40px 30px;
+            background-color: var(--dark-bg);
+            border-radius: 15px;
+            margin-bottom: 40px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+            color: var(--light-text);
+        }
+
+        .diseases-section h2 {
+            font-size: 2rem;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .diseases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .disease-card {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .disease-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .disease-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .disease-info {
+            padding: 15px;
+        }
+
+        .disease-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+        }
+
+        .disease-info p {
+            font-size: 0.9rem;
+            color: #ddd;
+            margin-bottom: 10px;
+        }
+
+        .footer {
+            width: 100%;
+            background-color: var(--dark-bg);
+            padding: 30px;
+            text-align: center;
+            margin-top: auto;
+            border-radius: 10px 10px 0 0;
+            color: #aaa;
+        }
+
+        .footer p {
+            margin-bottom: 15px;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: var(--light-text);
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background-color: var(--accent-color);
+            transform: translateY(-3px);
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-links {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">
+            <i class="fas fa-leaf"></i>
+            <h1>Pumpkin Leaf Doctor</h1>
+        </a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/upload">Analyze</a>
+            <a href="#diseases">Diseases</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>Pumpkin Leaf Disease Detector</h1>
+        <p>Protect your pumpkin crops with our AI-powered disease detection system. Simply upload a photo of your pumpkin leaf and get instant diagnosis and treatment recommendations.</p>
+        <div class="hero-buttons">
+            <a href="/upload" class="btn btn-primary">
+                <i class="fas fa-upload"></i> Upload Leaf Image
+            </a>
+            <a href="#learn" class="btn btn-secondary">
+                <i class="fas fa-book"></i> Learn More
+            </a>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="feature-card">
+            <i class="fas fa-robot"></i>
+            <h3>AI-Powered Analysis</h3>
+            <p>Our system uses advanced machine learning algorithms to accurately identify various pumpkin leaf diseases with high confidence.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-medkit"></i>
+            <h3>Treatment Recommendations</h3>
+            <p>Receive detailed treatment suggestions tailored to the specific disease affecting your pumpkin plants.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-bolt"></i>
+            <h3>Fast Results</h3>
+            <p>Get instant diagnosis and recommendations, allowing you to take immediate action to protect your crops.</p>
+        </div>
+    </section>
+
+    <section class="diseases-section" id="diseases">
+        <h2>Common Pumpkin Leaf Diseases</h2>
+        <p>Our detection system can identify the following common diseases that affect pumpkin plants:</p>
+        <div class="diseases-grid">
+            <div class="disease-card">
+                <img src="{{ url_for('static', filename='images/powdery_mildew.jpg') }}" alt="Powdery Mildew" class="disease-image">
+                <div class="disease-info">
+                    <h3>Powdery Mildew</h3>
+                    <p>Appears as white powdery spots on leaves. Can spread rapidly in humid conditions.</p>
+                </div>
+            </div>
+            <div class="disease-card">
+                <img src="{{ url_for('static', filename='images/mosaic_disease.jpg') }}" alt="Mosaic Disease" class="disease-image">
+                <div class="disease-info">
+                    <h3>Mosaic Disease</h3>
+                    <p>Causes yellow and green mottled patterns on leaves. Transmitted by aphids.</p>
+                </div>
+            </div>
+            <div class="disease-card">
+                <img src="{{ url_for('static', filename='images/downy_mildew.jpg') }}" alt="Downy Mildew" class="disease-image">
+                <div class="disease-info">
+                    <h3>Downy Mildew</h3>
+                    <p>Yellow spots on upper leaf surfaces with fuzzy growth on undersides.</p>
+                </div>
+            </div>
+            <div class="disease-card">
+                <img src="{{ url_for('static', filename='images/bacterial_spot.jpg') }}" alt="Bacterial Spot" class="disease-image">
+                <div class="disease-info">
+                    <h3>Bacterial Spot</h3>
+                    <p>Dark, water-soaked spots on leaves that may turn yellow and fall out.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="learn" class="diseases-section">
+        <h2>How It Works</h2>
+        <p>Our Pumpkin Leaf Disease Detector uses deep learning technology to identify diseases from images. Here's how the process works:</p>
+        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 20px;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="min-width: 40px; height: 40px; background-color: var(--accent-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">1</div>
+                <div>
+                    <h3 style="margin-bottom: 5px;">Image Upload</h3>
+                    <p>Take a clear photo of the affected pumpkin leaf and upload it through our simple interface.</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="min-width: 40px; height: 40px; background-color: var(--accent-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">2</div>
+                <div>
+                    <h3 style="margin-bottom: 5px;">AI Analysis</h3>
+                    <p>Our machine learning model analyzes the image, extracting features and patterns associated with different diseases.</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="min-width: 40px; height: 40px; background-color: var(--accent-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">3</div>
+                <div>
+                    <h3 style="margin-bottom: 5px;">Disease Identification</h3>
+                    <p>The system compares the extracted features with its training data to identify the specific disease.</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="min-width: 40px; height: 40px; background-color: var(--accent-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">4</div>
+                <div>
+                    <h3 style="margin-bottom: 5px;">Treatment Recommendations</h3>
+                    <p>Based on the identified disease, the system provides tailored treatment suggestions and preventive measures.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="social-links">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+        </div>
+        <p>© 2025 Pumpkin Leaf Disease Detector | AI-Powered Plant Health Monitoring</p>
+        <p>For educational and research purposes only. Always consult with agricultural experts for serious plant health issues.</p>
+    </footer>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
